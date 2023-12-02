@@ -1,0 +1,52 @@
+{
+  "name": "uploads-duplicator",
+  "version": "1.0.0",
+  "description": "This plugin allows you to seamlessly synchronize your Strapi CMS uploads folder with Google Drive.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/didenkodma/uploads-duplicator.git"
+  },
+  "strapi": {
+    "name": "uploads-duplicator",
+    "description": "This plugin allows you to seamlessly synchronize your Strapi CMS uploads folder with Google Drive",
+    "kind": "plugin",
+    "displayName": "Uploads Duplicator"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^1.6.3",
+    "@strapi/helper-plugin": "^4.6.0",
+    "@strapi/icons": "^1.6.3",
+    "prop-types": "^15.7.2",
+    "clipboard-copy": "4.0.1",
+    "googleapis": "128.0.0"
+  },
+  "devDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^5.3.4",
+    "styled-components": "^5.3.6"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0",
+    "react-router-dom": "^5.2.0",
+    "styled-components": "^5.2.1"
+  },
+  "author": {
+    "name": "didenkodma",
+    "email": "didenko.dma@gmail.com",
+    "url": "https://www.linkedin.com/in/didenko-dmytro"
+  },
+  "maintainers": [
+    {
+      "name": "didenkodma",
+      "email": "didenko.dma@gmail.com",
+      "url": "https://www.linkedin.com/in/didenko-dmytro"
+    }
+  ],
+  "engines": {
+    "node": ">=18.0.0 <=20.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}
