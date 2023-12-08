@@ -73,8 +73,6 @@ module.exports = {
 
 * To completely delete files in the "uploads" folder folder, please, restart strapi
 
-* Available main data formats: jpg, png, webp, gif, mp4, svg, docx, pdf, txt, zip, xlsx, json
-
 ### Contributing
 Feel free to contribute to the development of this plugin.
 If you have any questions, comments, or suggestions for improving the plugin, feel free to reach out to developer via email:
