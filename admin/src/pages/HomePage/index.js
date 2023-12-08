@@ -119,7 +119,7 @@ const HomePage = () => {
       {pluginState.status === 'error' && pluginState.status !== 'get_creds' && !pluginState.isLoading && <PluginError />}
       {pluginState.isLoading && <Loader  style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40vh'}}/>}
       {filesStatus.filesProcessing && pluginState.status !== 'get_creds' && <PluginFilesLoader filesNumber={filesStatus.processedFiles} totalFilesNumber={filesStatus.totalFiles} />}
-      {filesStatus.filesProcessing && pluginState.status === 'error' && <PluginRestart dispatch={dispatch} />}
+      {(filesStatus.filesProcessing || pluginState.status === 'error') && <PluginRestart dispatch={dispatch} />}
     </Box>
   );
 };
