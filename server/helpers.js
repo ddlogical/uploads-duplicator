@@ -2,56 +2,80 @@ const fs = require('fs');
 const mimeTypes = require('./mimeTypes.json');
 const path = require('path');
 
-async function uploadFilesOnGDrive(gDriveDirName, dirName, dirPath, drive) {
-    const currentFilesData = await getDirectoryData(dirPath);
-    const gDrivePath = await new Promise((resolve) => {
-        const dirPathArr =  dirPath.split('/');
-        const uploadsIndex = dirPathArr.findIndex(elem => elem === 'uploads');
-        resolve(['', gDriveDirName, ...dirPathArr.slice(uploadsIndex)].join('/'));
+async function uploadFilesOnGDrive({gDriveDirName, dirName, dirPath, drive}) {
+  await changeStatus(true, 0);
+  const currentFilesData = await getDirectoryData(dirPath);
+  await changeStatus(true, 0, currentFilesData.length);
+  const gDrivePath = await new Promise((resolve) => {
+      const dirPathArr =  dirPath.split('/');
+      const uploadsIndex = dirPathArr.findIndex(elem => elem === 'uploads');
+      resolve(['', gDriveDirName, ...dirPathArr.slice(uploadsIndex)].join('/'));
     });
-    const folder = await getGDriveDirectory(dirName, gDrivePath, drive);
-    await writeFilesOnGDrive(currentFilesData, folder, drive);
-
+  const folder = await getGDriveDirectory(dirName, gDrivePath, drive);
+  await writeFilesInBatches(drive, currentFilesData, folder);
+  await changeStatus(false, 0);
+  
 async function getDirectoryData(dirPath) {
     const currentFilesNames = await fs.promises.readdir(dirPath);
     return await Promise.all(currentFilesNames.map(async name => {
-        const fileMeta = await fs.promises.stat(`${dirPath}/${name}`);
-        const isDirectory = fileMeta.isDirectory();
-        const directoryData = isDirectory ? await getDirectoryData(`${dirPath}/${name}`) : null;
-        return {
-            name,
-            modTime: fileMeta.mtime,
-            isDirectory,
-            directoryData
+        try {
+          const fileMeta = await fs.promises.stat(`${dirPath}/${name}`);
+          const isDirectory = fileMeta.isDirectory();
+          const directoryData = isDirectory ? await getDirectoryData(`${dirPath}/${name}`) : null;
+          return {
+              name,
+              modTime: fileMeta.mtime,
+              isDirectory,
+              directoryData,
+              isError: false
+          }
+        } catch(error) {
+          return {
+            isError: true,
+            error
+          }
         }
     }));  
 }
 
-async function writeFilesOnGDrive(currentFilesData, folder, drive) {
-    const {data: {files: uploadedFiles}} = await drive.files.list({q: `'${folder.id}' in parents and trashed=false`, fields: 'files(id, name, appProperties)'});
-    const filePromises = currentFilesData.map(async (file) => {
-        if(!file.isDirectory) {
-            const fileFromUploads = await new Promise(resolve => resolve(uploadedFiles.find(fl => fl.name === file.name)));
-            const fileData = file.name.split('.');
-            const fileFormat = fileData[fileData.length - 1];
-            const mimeTypeData = mimeTypes[fileFormat];
-            const media = {mimeType: mimeTypeData, body: fs.createReadStream(`${dirPath}/${file.name}`)};
-            const requestBodyData = {name: file.name, mimeType: mimeTypeData, appProperties: {version: file.modTime}};
-            if(!fileFromUploads) {
-                if(mimeTypeData) {
-                    drive.files.create({requestBody: {...requestBodyData, parents: [folder.id]}, media});
-                }
-            } else {
-                if(file.modTime.toISOString() !== fileFromUploads.appProperties.version) {
-                drive.files.update({fileId: fileFromUploads.id, requestBody: requestBodyData, media});
-                }
+async function writeFilesInBatches(drive, files, folder, batchSize = 10) {
+    for (let i = 0; i < files.length; i += batchSize) {
+      const batch = files.slice(i, i + batchSize);
+      if(batchSize !== 1) {
+        await changeStatus(true, i);
+      }
+      await Promise.all(batch.map(async (file) => {
+        try {
+        if(!file.isError) {
+          const resp = await drive.files.list({q: `name='${file.name}' and trashed=false`, fields: 'files(id, name, appProperties)'});
+          const fileFromUploads = resp.data.files ? resp.data.files[0] : null;
+          const fileData = file.name.split('.');
+          const fileFormat = fileData[fileData.length - 1];
+          const mimeTypeData = mimeTypes[fileFormat];
+          const media = {mimeType: mimeTypeData, body: await fs.createReadStream(`${dirPath}/${file.name}`)};
+          const requestBodyData = {name: file.name, mimeType: mimeTypeData, appProperties: {version: file.modTime}};
+          if(!fileFromUploads) {
+            if(mimeTypeData) {
+                await drive.files.create({requestBody: {...requestBodyData, parents: [folder.id]}, media});
             }
-        } else {
-            uploadFilesOnGDrive(gDriveDirName, file.name, `${dirPath}/${file.name}`, drive);
+          } else {
+               if(file.modTime.toISOString() !== fileFromUploads.appProperties.version) {
+                 await drive.files.update({fileId: fileFromUploads.id, requestBody: requestBodyData, media});
+             }
+          }
         }
-      });
-      await Promise.all(filePromises);
+        } catch (error) {
+          console.error('Error uploading file:', error.message);
+          if (error?.status && (error.status === 429 || error.status === 403)) {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            return writeFilesInBatches(drive, [file], folder, 1); 
+          } else {
+            throw error;
+          }
+        }
+      }));
     }
+  }
 }
 
 async function getGDriveDirectory(dirName, dirPath, drive) {
@@ -78,6 +102,7 @@ async function getGDriveDirectory(dirName, dirPath, drive) {
 }
 
 async function getFilesFromGDrive(gDriveDirName, dirName, dirPath, drive) {
+    await changeStatus(true, 0);
     await removeFilesInDirectory(dirPath);
     const gDrivePath = await new Promise((resolve) => {
         const dirPathArr =  dirPath.split('/');
@@ -85,21 +110,57 @@ async function getFilesFromGDrive(gDriveDirName, dirName, dirPath, drive) {
         resolve(['', gDriveDirName, ...dirPathArr.slice(uploadsIndex)].join('/'));
     });
     const folder = await getGDriveDirectory(dirName, gDrivePath, drive);
-    const {data: {files: uploadedFiles}} = await drive.files.list({q: `'${folder.id}' in parents and trashed=false`, fields: 'files(id, name, mimeType, appProperties)'});
-    await Promise.all(uploadedFiles.map(async file => {
-            if(file.mimeType === 'application/vnd.google-apps.folder') {
-                await getFilesFromGDrive(gDriveDirName, file.name, `${dirPath}/${file.name}`, drive);
-            } else {
-                const {data} = await drive.files.get({
-                    fileId: file.id,
-                    alt: 'media',
-                  });
-                const buffer = await data.arrayBuffer();
-                const convertedData = Buffer.from(buffer);
-                await fs.promises.writeFile(`${dirPath}/${file.name}`, convertedData);
+    const allFilesOnGDrive = await listFiles(drive, folder);
+    await changeStatus(true, 0, allFilesOnGDrive.length);
+    await getFilesInBatches(drive, allFilesOnGDrive);
+    await changeStatus(false, 0);
+
+    async function getFilesInBatches(drive, files, batchSize = 10) {
+      for (let i = 0; i < files.length; i += batchSize) {
+        const batch = files.slice(i, i + batchSize);
+        if(batchSize !== 1) {
+          await changeStatus(true, i);
+        }
+        await Promise.all(batch.map(async (file) => {
+          try {
+            const resp = await drive.files.get({fileId: file.id, alt: 'media'});
+            if(resp?.data) {
+                  const buffer = await resp.data.arrayBuffer();
+                 const convertedData = Buffer.from(buffer);
+                 await fs.promises.writeFile(`${dirPath}/${file.name}`, convertedData);
             }
+          } catch (error) {
+            console.error('Error uploading file:', error.message);
+            if (error?.status && (error.status === 429 || error.status === 403)) {
+              await new Promise(resolve => setTimeout(resolve, 5000));
+              return getFilesInBatches(drive, [file], 1); 
+            } else {
+              throw error;
+            }
+          }
         }));
+      }
+    }
 }
+
+
+async function changeStatus(filesProcessing, processedFiles, totalFiles = 0) {
+  try {
+    const [data] = await strapi.db.query('plugin::uploads-duplicator.state').findMany();
+    await strapi.db.query('plugin::uploads-duplicator.state').update({
+      where: { id: data.id },
+      data: {
+        files_processing: filesProcessing,
+        processed_files: processedFiles, 
+        total_files: totalFiles > 0 ? totalFiles : data.total_files 
+    }});
+  } catch(err) {
+    console.log('Error in changeStatus function');
+    throw err;
+  }
+}
+
+
 
 async function removeFilesInDirectory(dirPath) {
     try {
@@ -130,10 +191,26 @@ async function deleteFile(filePath) {
       }
 }
 
+async function listFiles(drive, folder, pageToken) {
+  try {
+    const resp = await drive.files.list({ q: `'${folder.id}' in parents and trashed=false`, fields: 'nextPageToken, files(id, name)', pageToken: pageToken});
+    if(resp?.data?.nextPageToken) {
+      const nextData = await listFiles(drive, folder, resp.data.nextPageToken);
+      return resp?.data?.files ? [...resp?.data?.files, ...nextData] : [...nextData];
+    } else {
+      return resp?.data?.files ? resp?.data?.files : [];
+    }
+  } catch(error) {
+    console.error(error);
+    return [];
+  }
+}
+
 module.exports = {
     uploadFilesOnGDrive,
     getFilesFromGDrive,
     removeFilesInDirectory,
+    changeStatus,
     checkFile, 
     deleteFile
 };

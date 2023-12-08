@@ -13,7 +13,7 @@ const oauth2ClientMiddleware = async (ctx, next) => {
       data.client_secret,
       data.redirect_uri
    );
-  try {
+    try {
     const creds = await fs.promises.readFile(`${rootDir}/uploadDuplicatorCreds.json`);
     oauth2Client.setCredentials(JSON.parse(creds));
   } catch(err) {
@@ -37,6 +37,14 @@ module.exports = [
     method: 'GET',
     path: '/check-creds',
     handler: 'credsController.checkCreds',
+    config: {
+      policies: [],
+    },
+  },
+  {
+    method: 'GET',
+    path: '/check-state',
+    handler: 'stateController.checkState',
     config: {
       policies: [],
     },

@@ -1,4 +1,5 @@
 {
+    "doc": "application/msword",
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "odt": "application/vnd.oasis.opendocument.text",
     "rtf": "application/rtf",
@@ -13,6 +14,7 @@
     "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "odp": "application/vnd.oasis.opendocument.presentation",
     "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
     "png": "image/png",
     "webp": "image/webp",
     "svg": "image/svg+xml",

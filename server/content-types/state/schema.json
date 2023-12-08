@@ -1,0 +1,44 @@
+{
+  "kind": "singleType",
+  "collectionName": "states",
+  "info": {
+    "singularName": "state",
+    "pluralName": "states",
+    "displayName": "state"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "comment": ""
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": false
+    },
+    "content-type-builder": {
+      "visible": false
+    }
+  },
+  "attributes": {
+    "files_processing": {
+      "type": "boolean",
+      "required": true,
+      "private": true,
+      "configurable": false,
+      "default": false
+    },
+    "processed_files": {
+      "type": "integer",
+      "required": true,
+      "private": true,
+      "configurable": false,
+      "default": 0
+    },
+    "total_files": {
+      "type": "integer",
+      "required": true,
+      "private": true,
+      "configurable": false,
+      "default": 0
+    }
+  }
+}

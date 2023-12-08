@@ -1,11 +1,11 @@
 {
   "name": "uploads-duplicator",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "This plugin allows you to seamlessly synchronize your Strapi CMS uploads folder with Google Drive.",
   "keywords": ["npm", "strapi", "plugin", "uploads-duplicator", "uploads duplicator", "google drive", "uploads", "media files"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/didenkodma/uploads-duplicator.git"
+    "url": "https://github.com/ddlogical/uploads-duplicator.git"
   },
   "strapi": {
     "name": "uploads-duplicator",
@@ -34,15 +34,15 @@
     "styled-components": "^5.2.1"
   },
   "author": {
-    "name": "didenkodma",
-    "email": "didenko.dma@gmail.com",
-    "url": "https://www.linkedin.com/in/didenko-dmytro"
+    "name": "ddlogical",
+    "email": "2dl0gical@gmail.com",
+    "url": "https://github.com/ddlogical"
   },
   "maintainers": [
     {
-      "name": "didenkodma",
-      "email": "didenko.dma@gmail.com",
-      "url": "https://www.linkedin.com/in/didenko-dmytro"
+      "name": "ddlogical",
+      "email": "2dl0gical@gmail.com",
+      "url": "hhttps://github.com/ddlogical"
     }
   ],
   "engines": {

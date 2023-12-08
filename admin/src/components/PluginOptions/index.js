@@ -4,21 +4,23 @@ import { ExclamationMarkCircle, Trash, CloudUpload, Download, Rotate } from '@st
 import { useState } from "react";
 import { useFetchClient } from "@strapi/helper-plugin";
 
-const PluginOptions = ({dispatch}) => {
+const PluginOptions = ({dispatch, setFilesStatus}) => {
     const [isGetVisible, setIsGetVisible] = useState(false);
     const [isDeleteVisible, setIsDeleteVisible] = useState(false);
     const {get} = useFetchClient();
 
-    const handleUploadData = async e => {
-        e.preventDefault();
+    const handleUploadData = async() => {
         try {
             dispatch({type: 'add_loading_status'});
+            setFilesStatus({
+                filesProcessing: true,
+                processedFiles: 0,
+                totalFiles: 0
+              });
             const res = await get('/uploads-duplicator/upload-data', {
                 signal: newAbortSignal()
              });
-             if(res.data.success) {
-                dispatch({type: 'chande_status', payload: 'options'});
-             } else {
+             if(!res.data.success) {
                 dispatch({type: 'chande_status', payload: 'error'});
              }
         } catch(err) {
@@ -26,16 +28,18 @@ const PluginOptions = ({dispatch}) => {
             dispatch({type: 'chande_status', payload: 'error'});
         }
     }
-    const handleGetData = async e => {
-        e.preventDefault();
+    const handleGetData = async () => {
         try {
             dispatch({type: 'add_loading_status'});
+            setFilesStatus({
+                filesProcessing: true,
+                processedFiles: 0,
+                totalFiles: 0
+              });
             const res = await get('/uploads-duplicator/get-data', {
                 signal: newAbortSignal()
              });
-             if(res.data.success) {
-                dispatch({type: 'chande_status', payload: 'options'});
-             } else {
+             if(!res.data.success) {
                 dispatch({type: 'chande_status', payload: 'error'});
              }
         } catch(err) {
@@ -44,8 +48,7 @@ const PluginOptions = ({dispatch}) => {
         }
     }
 
-    const handleDeleteData = async e => {
-        e.preventDefault();
+    const handleDeleteData = async () => {
         try {
             dispatch({type: 'add_loading_status'});
             const res = await get('/uploads-duplicator/delete-data', {

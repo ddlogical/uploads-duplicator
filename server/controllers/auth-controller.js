@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = ({ strapi }) => ({
+module.exports = () => ({
   async auth(ctx) {
     const url = ctx.oauth2Client.generateAuthUrl({
       access_type: 'offline',

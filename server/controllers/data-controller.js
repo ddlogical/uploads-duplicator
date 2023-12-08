@@ -11,11 +11,12 @@ module.exports = ({strapi}) => ({
             auth: ctx.oauth2Client
           });
           const [ data ] = await strapi.db.query('plugin::uploads-duplicator.credentials').findMany();
-          await uploadFilesOnGDrive(data.g_drive_dir_name, 'uploads', `${rootDir}/public/uploads`, drive);
-          ctx.response.body = {message: 'Credentials successfully stored', success: true};
+          await uploadFilesOnGDrive({gDriveDirName: data.g_drive_dir_name, dirName: 'uploads', dirPath: `${rootDir}/public/uploads`, drive});
+          ctx.response.body = {message: 'Data successfully stored', success: true, rateLimitExceeded: false};
           ctx.status = 200;
     } catch(err) {
-        ctx.response.body = {message: `Error: ${err}`, success: false};
+        console.error(err);
+        ctx.response.body = {message: `Error: ${err}`, success: false, rateLimitExceeded: false};
         ctx.status = 500;
     }
   },
@@ -40,6 +41,7 @@ module.exports = ({strapi}) => ({
           ctx.response.body = {message: 'Credentials successfully stored', success: true};
           ctx.status = 200;
     } catch(err) {
+      console.log(err);
         ctx.response.body = {message: `Error: ${err}`, success: false};
         ctx.status = 500;
     }
