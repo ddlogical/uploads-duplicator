@@ -63,7 +63,7 @@ module.exports = {
 | .gif            | image/gif                                               | Images      |
 | .avi            | video/x-msvideo                                         | Videos      |
 | .mp4            | video/mp4                                               | Videos      |
-| .mp3            | audio/mpeg  
+| .mp3            | audio/mpeg                                              | Audios      |
 
 ### Usage
 
