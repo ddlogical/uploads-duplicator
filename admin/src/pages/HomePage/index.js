@@ -15,6 +15,7 @@ import { useReducer, useEffect, useState } from 'react';
 import { Box, Loader } from '@strapi/design-system';
 import newAbortSignal from "../../utils/newAbortSignal";
 import { useFetchClient } from "@strapi/helper-plugin";
+import PluginRestart from '../../components/PluginRestart';
 
 function statusReducer(state, action) {
   switch (action.type) {
@@ -85,7 +86,9 @@ const HomePage = () => {
       totalFiles: resp?.data?.totalFiles,
     })
     if (!resp?.data?.filesProcessing) {
-      dispatch({type: 'chande_status', payload: 'options'});
+      if(pluginState.status !== 'set_redirect_url') {
+        dispatch({type: 'chande_status', payload: 'options'});
+      }
     }
     } catch(err) {
       console.log(err)
@@ -113,9 +116,10 @@ const HomePage = () => {
       {pluginState.status === 'get_creds' && !pluginState.isLoading && <PluginStarterForm dispatch={dispatch} />}
       {pluginState.status === 'set_redirect_url' && !pluginState.isLoading && <PluginRedirectUrl dispatch={dispatch} />}
       {pluginState.status === 'options' && !pluginState.isLoading && <PluginOptions dispatch={dispatch} setFilesStatus={setFilesStatus} />}
-      {pluginState.status === 'error' && !pluginState.isLoading && <PluginError />}
+      {pluginState.status === 'error' && pluginState.status !== 'get_creds' && !pluginState.isLoading && <PluginError />}
       {pluginState.isLoading && <Loader  style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40vh'}}/>}
-      {filesStatus.filesProcessing && <PluginFilesLoader filesNumber={filesStatus.processedFiles} totalFilesNumber={filesStatus.totalFiles} />}
+      {filesStatus.filesProcessing && pluginState.status !== 'get_creds' && <PluginFilesLoader filesNumber={filesStatus.processedFiles} totalFilesNumber={filesStatus.totalFiles} />}
+      {filesStatus.filesProcessing && pluginState.status === 'error' && <PluginRestart dispatch={dispatch} />}
     </Box>
   );
 };
