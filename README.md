@@ -71,7 +71,7 @@ module.exports = {
 
 * If you delete files in Media Library, you also should manually delete this files(all versions) on Google Drive
 
-* To completely delete files in the "uploads" folder folder, please, restart strapi
+* To completely delete files in the "uploads" folder, please, restart strapi
 
 ### Contributing
 Feel free to contribute to the development of this plugin.

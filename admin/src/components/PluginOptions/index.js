@@ -21,11 +21,10 @@ const PluginOptions = ({dispatch, setFilesStatus}) => {
                 signal: newAbortSignal()
              });
              if(!res.data.success) {
-                dispatch({type: 'chande_status', payload: 'error'});
+                console.error(res?.data?.message)
              }
         } catch(err) {
             console.error(err);
-            dispatch({type: 'chande_status', payload: 'error'});
         }
     }
     const handleGetData = async () => {
@@ -40,11 +39,10 @@ const PluginOptions = ({dispatch, setFilesStatus}) => {
                 signal: newAbortSignal()
              });
              if(!res.data.success) {
-                dispatch({type: 'chande_status', payload: 'error'});
+                console.error(res?.data?.message)
              }
         } catch(err) {
             console.error(err);
-            dispatch({type: 'chande_status', payload: 'error'});
         }
     }
 
@@ -57,11 +55,10 @@ const PluginOptions = ({dispatch, setFilesStatus}) => {
              if(res.data.success) {
                 dispatch({type: 'chande_status', payload: 'options'});
              } else {
-                dispatch({type: 'chande_status', payload: 'error'});
+                console.error(res?.data?.message)
              }
         } catch(err) {
             console.error(err);
-            dispatch({type: 'chande_status', payload: 'error'});
         }
     }
 

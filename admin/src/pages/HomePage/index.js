@@ -71,7 +71,9 @@ const HomePage = () => {
        }
   } catch(err) {
       console.error(err);
-      dispatch({type: 'chande_status', payload: 'error'});
+      if(!filesStatus.filesProcessing) {
+        dispatch({type: 'chande_status', payload: 'error'});
+      }
   }
   }
 

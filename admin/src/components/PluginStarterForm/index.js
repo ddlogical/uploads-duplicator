@@ -24,6 +24,7 @@ const PluginStarterForm = ({dispatch}) => {
                  if(res.data.success) {
                      dispatch({type: 'chande_status', payload: 'set_redirect_url'});
                  } else {
+                    console.error(res?.data?.message);
                     dispatch({type: 'chande_status', payload: 'error'});
                  }
             } catch(err) {
